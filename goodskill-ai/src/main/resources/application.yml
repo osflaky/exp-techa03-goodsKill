@@ -1,0 +1,61 @@
+server:
+  port: 18077
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: goodskill-ai
+  redis:
+    redisson:
+      config: |
+        singleServerConfig:
+          address: "redis://${spring.data.redis.host}:${spring.data.redis.port}"
+          password: ${spring.data.redis.password}
+  ai:
+    dashscope:
+      # 从环境变量读取 API Key，避免硬编码泄漏风险
+      api-key: ${DASHSCOPE_API_KEY}
+    ollama:
+      base-url: http://${OLLAMA_HOST}:11434
+      chat:
+        options:
+          model: qwen3.5:9b
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+    mcp:
+      client:
+        enabled: true
+        toolcallback:
+          enabled: true
+        streamable-http:
+          connections:
+            jina:
+              # 官方地址：https://mcp.jina.ai 本地部署：http://127.0.0.1:8787
+              url: "https://mcp.jina.ai"
+              endpoint: "/sse"
+        request-timeout: 60000
+  datasource:
+    url: jdbc:postgresql://localhost:5432/vector_db
+    username: goodskill
+    password: Password123
+    driver-class-name: org.postgresql.Driver
+  cloud:
+    nacos:
+      username: nacos
+      password: nacos
+      server-addr: nacos:8848
+  config:
+    import:
+      - optional:nacos:goodskill-common-connection.yml
+      - optional:nacos:goodskill-common.yml
+
+goodskill:
+  ai:
+    provider: dashscope
+  kb:
+    default-top-k: 4
+  vectorstore:
+    table-name: vector_store
+    dimensions: 1024
